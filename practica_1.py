@@ -100,7 +100,7 @@ def mover_jugador(x, y):
                 return
 
         elif jugador.tipo == 'Pie Grande':
-            if m[x][y] == '1':  # Montaña
+            if m[x][y] == '0':  # Montaña
                 contador.set(contador.get() + 15)
             elif m[x][y] == '1':
                 contador.set(contador.get() + 4)
@@ -164,8 +164,6 @@ ventana.focus_set()
 
 jugador = Jugador()
 
-seleccionar_personaje()
-
 ventana_contador = tk.Toplevel(ventana)
 ventana_contador.title("Contador")
 mensaje_contador = tk.Label(ventana_contador, text="")
@@ -173,7 +171,9 @@ mensaje_contador.pack(pady=20, padx=20)
 
 inicio_x = simpledialog.askinteger("Inicio", "Coordenada X de inicio:", minvalue=0, maxvalue=len(m)-1)
 inicio_y = simpledialog.askinteger("Inicio", "Coordenada Y de inicio:", minvalue=0, maxvalue=len(m[0])-1)
+jugador = Jugador(inicio_x, inicio_y)
 
+seleccionar_personaje()
 fin_x = simpledialog.askinteger("Final", "Coordenada X final:", minvalue=0, maxvalue=len(m)-1)
 fin_y = simpledialog.askinteger("Final", "Coordenada Y final:", minvalue=0, maxvalue=len(m[0])-1)
 

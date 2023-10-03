@@ -7,7 +7,9 @@ class Jugador:
         self.y = y
         self.tipo = tipo
 
+
 def seleccionar_personaje():
+    global jugador
     dialogo = tk.Toplevel(ventana)
     dialogo.title("Seleccionar Personaje")
     tk.Label(dialogo, text="Elige un personaje:").pack(pady=10)
@@ -17,12 +19,15 @@ def seleccionar_personaje():
     combobox.set("Humano")
 
     def confirmar_seleccion():
-        jugador.tipo = combobox.get()
+        global jugador
+        jugador.tipo = combobox.get()  # Asignamos el tipo al objeto jugador
+        print(f"Tipo de jugador seleccionado: {jugador.tipo}")  # Añadir esta línea
         dialogo.destroy()
-        
+
     btn_confirmar = tk.Button(dialogo, text="Confirmar", command=confirmar_seleccion)
     btn_confirmar.pack(pady=10)
-    ventana.wait_window(dialogo)        
+    ventana.wait_window(dialogo)
+personaje_seleccionado = ""
 
 # Muestra la información de una casilla al hacer clic sobre ella
 def mostrar_info(x, y):
@@ -43,7 +48,73 @@ def actualizar_contador():
     mensaje_contador.config(text=f"El número que llevas es: {contador.get()}")
 
 def mover_jugador(x, y):
+    print(f"Intentando mover al jugador de tipo: {jugador.tipo}")  # Añadir esta línea
     if 0 <= x < len(m) and 0 <= y < len(m[0]):
+        valor_casilla = int(m[x][y])
+        if jugador.tipo == 'Humano':
+            if m[x][y] == '0':  # Montaña
+                return  # No puede moverse, por lo que simplemente retornamos sin hacer nada
+            elif m[x][y] == '1':
+                contador.set(contador.get() + 1)
+            elif m[x][y] == '2':
+                contador.set(contador.get() + 2)
+            elif m[x][y] == '3':
+                contador.set(contador.get() + 3)
+            elif m[x][y] == '4':
+                contador.set(contador.get() + 4)
+            elif m[x][y] == '5':
+                contador.set(contador.get() + 5)
+            elif m[x][y] == '6':
+                contador.set(contador.get() + 6)
+    
+        elif jugador.tipo == 'Mono':
+            if m[x][y] == '0':  # Montaña
+                return  # No puede moverse, por lo que simplemente retornamos sin hacer nada
+            elif m[x][y] == '1':
+                contador.set(contador.get() + 2)
+            elif m[x][y] == '2':
+                contador.set(contador.get() + 4)
+            elif m[x][y] == '3':
+                contador.set(contador.get() + 3)
+            elif m[x][y] == '4':
+                contador.set(contador.get() + 1)
+            elif m[x][y] == '5':
+                contador.set(contador.get() + 5)
+            elif m[x][y] == '6':
+                return
+        
+        elif jugador.tipo == 'Pulpo':
+            if m[x][y] == '0':  # Montaña
+                return  # No puede moverse, por lo que simplemente retornamos sin hacer nada
+            elif m[x][y] == '1':
+                contador.set(contador.get() + 2)
+            elif m[x][y] == '2':
+                contador.set(contador.get() + 1)
+            elif m[x][y] == '3':
+                return
+            elif m[x][y] == '4':
+                contador.set(contador.get() + 3)
+            elif m[x][y] == '5':
+                contador.set(contador.get() + 2)
+            elif m[x][y] == '6':
+                return
+
+        elif jugador.tipo == 'Pie Grande':
+            if m[x][y] == '1':  # Montaña
+                contador.set(contador.get() + 15)
+            elif m[x][y] == '1':
+                contador.set(contador.get() + 4)
+            elif m[x][y] == '2':
+                return
+            elif m[x][y] == '3':
+                return
+            elif m[x][y] == '4':
+                contador.set(contador.get() +4)
+            elif m[x][y] == '5':
+                contador.set(contador.get() + 5)
+            elif m[x][y] == '6':
+                contador.set(contador.get() + 3)
+
         boton_anterior = botones[jugador.x][jugador.y]
         boton_anterior.config(bg=colores[m[jugador.x][jugador.y]])
         
@@ -51,11 +122,11 @@ def mover_jugador(x, y):
         botones[jugador.x][jugador.y].config(bg='red')
         
         visitados[jugador.x][jugador.y] = True
-        contador.set(contador.get() + int(m[jugador.x][jugador.y]))
         actualizar_contador()
 
         if (jugador.x, jugador.y) == (fin_x, fin_y):
             messagebox.showinfo("Victoria", f"Has llegado al final!\n\nPuntuación: {contador.get()}")
+
 
 def manejar_teclas(event):
     if event.keysym == 'Up':
@@ -106,7 +177,6 @@ inicio_y = simpledialog.askinteger("Inicio", "Coordenada Y de inicio:", minvalue
 fin_x = simpledialog.askinteger("Final", "Coordenada X final:", minvalue=0, maxvalue=len(m)-1)
 fin_y = simpledialog.askinteger("Final", "Coordenada Y final:", minvalue=0, maxvalue=len(m[0])-1)
 
-jugador = Jugador(inicio_x, inicio_y)
 visitados[jugador.x][jugador.y] = True
 
 contador = tk.IntVar(value=int(m[inicio_x][inicio_y]))

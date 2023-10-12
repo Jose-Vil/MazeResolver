@@ -29,20 +29,42 @@ def seleccionar_personaje():
     ventana.wait_window(dialogo)
 personaje_seleccionado = ""
 
-# Muestra la información de una casilla al hacer clic sobre ella
 def mostrar_info(x, y):
     tipo_terreno = {
-    '0': "Montaña",
-    '1': "Pradera",
-    '2': "Agua",
-    '3': "Arena",
-    '4': "Bosque",
-    '5': "Pantano",
-    '6': "Nieve"
-}.get(m[x][y], "Desconocido")
+        '0': "Montaña",
+        '1': "Pradera",
+        '2': "Agua",
+        '3': "Arena",
+        '4': "Bosque",
+        '5': "Pantano",
+        '6': "Nieve"
+    }.get(m[x][y], "Desconocido")
     valor = m[x][y]
     estado_jugador = "El jugador ha pasado por aquí" if visitados[x][y] else "El jugador no ha pasado por aquí"
-    messagebox.showinfo("Información", f"Estado: {estado_jugador}\n\nCoordenadas: ({x}, {y})\n\nTipo de terreno: {tipo_terreno}")
+    
+    respuesta = messagebox.askyesnocancel("Información", f"Estado: {estado_jugador}\n\nCoordenadas: ({x}, {y})\n\nTipo de terreno: {tipo_terreno}\n\n¿Deseas modificar esta casilla?")
+    
+    if respuesta == True:
+        nuevo_valor = simpledialog.askstring("Modificar Casilla", "Ingresa el nuevo valor (0-6):")
+        if nuevo_valor in ['0', '1', '2', '3', '4', '5', '6']:
+            m[x][y] = nuevo_valor
+            botones[x][y].config(bg=colores[nuevo_valor], text=nuevo_valor)
+
+def actualizar_colores_casillas():
+    for i in range(len(m)):
+        for j in range(len(m[i])):
+            # Si la casilla es adyacente al jugador, la pintas con su color original.
+            if (i == jugador.x and (j == jugador.y - 1 or j == jugador.y + 1)) or (j == jugador.y and (i == jugador.x - 1 or i == jugador.x + 1)):
+                botones[i][j].config(bg=colores[m[i][j]])
+            # Si la casilla no ha sido visitada, la pintas de gris.
+            elif not visitados[i][j]:
+                botones[i][j].config(bg="#D3D3D3")  # Color gris
+
+            # Aquí es donde modificamos el texto de los botones.
+            if visitados[i][j]:
+                botones[i][j].config(text="X")
+            else:
+                botones[i][j].config(text="O")
 
 def actualizar_contador():
     mensaje_contador.config(text=f"El número que llevas es: {contador.get()}")
@@ -100,7 +122,7 @@ def mover_jugador(x, y):
                 return
 
         elif jugador.tipo == 'Pie Grande':
-            if m[x][y] == '1':  # Montaña
+            if m[x][y] == '0':  # Montaña
                 contador.set(contador.get() + 15)
             elif m[x][y] == '1':
                 contador.set(contador.get() + 4)
@@ -119,6 +141,7 @@ def mover_jugador(x, y):
         boton_anterior.config(bg=colores[m[jugador.x][jugador.y]])
         
         jugador.x, jugador.y = x, y
+        actualizar_colores_casillas()
         botones[jugador.x][jugador.y].config(bg='red')
         
         visitados[jugador.x][jugador.y] = True
@@ -163,7 +186,6 @@ ventana.focus_set()
 
 
 jugador = Jugador()
-
 seleccionar_personaje()
 
 ventana_contador = tk.Toplevel(ventana)
@@ -173,7 +195,8 @@ mensaje_contador.pack(pady=20, padx=20)
 
 inicio_x = simpledialog.askinteger("Inicio", "Coordenada X de inicio:", minvalue=0, maxvalue=len(m)-1)
 inicio_y = simpledialog.askinteger("Inicio", "Coordenada Y de inicio:", minvalue=0, maxvalue=len(m[0])-1)
-
+jugador.x = inicio_x
+jugador.y = inicio_y
 fin_x = simpledialog.askinteger("Final", "Coordenada X final:", minvalue=0, maxvalue=len(m)-1)
 fin_y = simpledialog.askinteger("Final", "Coordenada Y final:", minvalue=0, maxvalue=len(m[0])-1)
 
@@ -186,18 +209,21 @@ botones = []
 for i in range(len(m)):
     fila_botones = []
     for j in range(len(m[i])):
-        char = m[i][j]
-        color = colores[char]
+        # Elimina la asignación de "texto = char" y solo usa "texto" para marcar inicio y final
         if (i, j) == (inicio_x, inicio_y):
             texto = "I"
         elif (i, j) == (fin_x, fin_y):
             texto = "F"
         else:
-            texto = char
+            texto = ""  # Esta línea asegura que las casillas normales no tengan texto
 
-        boton = tk.Button(ventana, text=texto, bg=color if (i, j) != (jugador.x, jugador.y) else "red", command=lambda x=i, y=j: mostrar_info(x, y))
+        boton = tk.Button(ventana, text=texto, bg="#D3D3D3", command=lambda x=i, y=j: mostrar_info(x, y))
         boton.grid(row=i, column=j, padx=5, pady=5)
         fila_botones.append(boton)
     botones.append(fila_botones)
+
+
+# Ahora que todos los botones están creados, actualizamos sus colores.
+actualizar_colores_casillas()
 
 ventana.mainloop()
